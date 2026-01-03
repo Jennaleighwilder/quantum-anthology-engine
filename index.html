@@ -12,7 +12,7 @@
   }
   *{box-sizing:border-box}
   body{margin:0; background:radial-gradient(1200px 600px at 20% -10%, #101530 0%, #090c14 45%, #070a10 100%);
-       color:var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial}
+       color:var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size:18px; line-height:1.6}
   .wrap{max-width:1200px; margin:0 auto; padding:22px}
   .hdr{padding:14px 16px; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,#0e1324,#0a0f1e)}
   h1{margin:0 0 6px 0; font-weight:780; letter-spacing:.15px}
@@ -20,10 +20,10 @@
   .grid{display:grid; gap:14px; grid-template-columns:1fr}
   @media(min-width:980px){ .grid{grid-template-columns:1.05fr .95fr} }
   .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px 16px}
-  h2{margin:0 0 8px 0; font-size:20px}
-  h3{margin:10px 0 6px 0; font-size:16px; color:#C7D2FE}
+  h2{margin:0 0 8px 0; font-size:28px}
+  h3{margin:10px 0 6px 0; font-size:20px; color:#C7D2FE}
   input,textarea,select{width:100%; background:#0c1120; border:1px solid var(--line); color:var(--ink);
-    border-radius:12px; padding:10px 12px; font-size:14px}
+    border-radius:12px; padding:12px 14px; font-size:18px}
   button{background:#0c1120; color:var(--ink); border:1px solid var(--line); padding:9px 12px; border-radius:10px; cursor:pointer}
   button:hover{background:#11162a}
   .pill{border:1px solid var(--line); border-radius:999px; padding:6px 10px; color:var(--mut); background:#0c1020}
@@ -32,11 +32,12 @@
   .three{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
   .meter{height:10px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#0a0e18}
   .bar{height:100%; width:0%; background:linear-gradient(90deg,var(--hi1),var(--hi2)); transition:width .25s ease}
-  .tbl{width:100%; border-collapse:collapse; font-size:13px}
+  .tbl{width:100%; border-collapse:collapse; font-size:16px}
   .tbl th,.tbl td{padding:8px 6px; border-bottom:1px solid var(--line)}
   .tbl th{color:#C7D2FE; text-align:left; font-weight:600}
   .right{justify-content:flex-end}
-  pre{background:#0b0f1e; border:1px solid var(--line); border-radius:12px; padding:12px; overflow:auto; white-space:pre-wrap; word-wrap:break-word}
+  pre{background:#0b0f1e; border:1px solid var(--line); border-radius:12px; padding:12px; overflow:auto; white-space:pre-wrap; word-wrap:break-word; font-size:18px; line-height:1.7}
+  #story{font-size:20px; line-height:1.8; min-height:200px}
   .shadow{color:#a1a9c8}
   .api-section{background:linear-gradient(135deg, #0e1428 0%, #0a0f1e 100%); border:1px solid var(--hi2); margin-bottom:14px}
   .api-row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
@@ -47,7 +48,7 @@
   .loading{opacity:0.6; pointer-events:none}
   .spinner{display:inline-block; width:16px; height:16px; border:2px solid var(--line); border-top-color:var(--hi1); border-radius:50%; animation:spin 1s linear infinite; margin-right:8px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .gen-badge{font-size:11px; padding:3px 8px; border-radius:6px; background:var(--hi2); color:white; margin-left:8px}
+  .gen-badge{font-size:13px; padding:4px 10px; border-radius:6px; background:var(--hi2); color:white; margin-left:8px}
   .genre-btn{padding:8px 14px; border-radius:10px; border:1px solid var(--line); background:#0c1120; color:var(--mut); cursor:pointer; transition:all 0.2s}
   .genre-btn:hover{border-color:var(--hi1); color:var(--ink)}
   .genre-btn.active{border-color:var(--hi1); background:linear-gradient(135deg, #0c1a2a 0%, #0e1428 100%); color:var(--hi1); box-shadow:0 0 12px rgba(6,182,212,0.2)}
@@ -56,11 +57,11 @@
   .saved-item{display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border:1px solid var(--line); border-radius:8px; margin:4px 0; background:#0b0f1e}
   .saved-item:hover{border-color:var(--hi1)}
   .saved-title{flex:1; cursor:pointer}
-  .saved-meta{font-size:11px; color:var(--mut)}
+  .saved-meta{font-size:14px; color:var(--mut)}
   .delete-btn{background:transparent; border:none; color:var(--hi4); cursor:pointer; padding:4px 8px}
   .export-options{display:flex; gap:8px; flex-wrap:wrap}
   .biometric-panel{border:1px solid var(--hi1); background:linear-gradient(135deg, #081018 0%, #0e1322 100%)}
-  .bio-status{display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:8px; background:#0a0e18; font-size:13px}
+  .bio-status{display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:8px; background:#0a0e18; font-size:15px}
   .bio-indicator{width:8px; height:8px; border-radius:50%; background:var(--hi4)}
   .bio-indicator.active{background:var(--success); box-shadow:0 0 8px var(--success)}
   .bio-value{font-family:monospace; color:var(--hi1)}
@@ -74,7 +75,7 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
   .audio-viz{height:30px; display:flex; align-items:center; gap:2px; padding:0 10px}
   .audio-bar{width:3px; background:var(--hi1); border-radius:2px; transition:height 0.1s}
-  kbd{background:#1a1f30; border:1px solid var(--line); border-radius:4px; padding:2px 6px; font-size:11px; color:var(--mut)}
+  kbd{background:#1a1f30; border:1px solid var(--line); border-radius:4px; padding:4px 8px; font-size:13px; color:var(--mut)}
   
   /* Theme toggle */
   .theme-toggle{position:fixed; top:16px; right:16px; z-index:100; display:flex; gap:8px}
@@ -121,7 +122,7 @@
     body{background:white !important; color:black !important}
     .theme-toggle, .api-section, .biometric-panel, .genre-grid, button, .library-section, .meter, .tbl{display:none !important}
     .card{border:none !important; box-shadow:none !important}
-    #story{font-size:14pt; line-height:1.6; padding:0; border:none; background:none}
+    #story{font-size:16pt; line-height:1.8; padding:0; border:none; background:none}
     .hdr{border:none; background:none; text-align:center}
   }
 </style>
@@ -144,10 +145,10 @@
       <span class="pill">Biometrics</span>
     </div>
     <div class="row" style="margin-top:6px; gap:16px">
-      <span class="mut" style="font-size:12px"><kbd>⌘</kbd>+<kbd>Enter</kbd> Collapse</span>
-      <span class="mut" style="font-size:12px"><kbd>⌘</kbd>+<kbd>S</kbd> Save</span>
-      <span class="mut" style="font-size:12px"><kbd>Space</kbd> Read aloud</span>
-      <span class="mut" style="font-size:12px"><kbd>Esc</kbd> Stop all</span>
+      <span class="mut" style="font-size:14px"><kbd>⌘</kbd>+<kbd>Enter</kbd> Collapse</span>
+      <span class="mut" style="font-size:14px"><kbd>⌘</kbd>+<kbd>S</kbd> Save</span>
+      <span class="mut" style="font-size:14px"><kbd>Space</kbd> Read aloud</span>
+      <span class="mut" style="font-size:14px"><kbd>Esc</kbd> Stop all</span>
     </div>
   </section>
 
@@ -204,7 +205,7 @@
       <div class="webcam-container" id="webcamContainer">
         <video id="webcam" autoplay playsinline muted></video>
         <canvas id="webcamOverlay" class="webcam-overlay"></canvas>
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--mut);font-size:12px;text-align:center" id="webcamPlaceholder">📷 Camera off</div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--mut);font-size:14px;text-align:center" id="webcamPlaceholder">📷 Camera off</div>
       </div>
       <div style="flex:1">
         <div class="row" style="gap:12px; flex-wrap:wrap">
