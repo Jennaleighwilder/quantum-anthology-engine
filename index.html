@@ -1,0 +1,1561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>QUANTUM ANTHOLOGY ENGINE — Superposition → Observation → Collapse</title>
+<style>
+  :root{
+    --bg:#0a0c12; --panel:#0e1322; --ink:#E9EDF7; --mut:#9AA6B2; --line:#1b2132;
+    --hi1:#06b6d4; --hi2:#8b5cf6; --hi3:#f59e0b; --hi4:#ef4444;
+    --success:#22c55e; --warning:#eab308;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:radial-gradient(1200px 600px at 20% -10%, #101530 0%, #090c14 45%, #070a10 100%);
+       color:var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial}
+  .wrap{max-width:1200px; margin:0 auto; padding:22px}
+  .hdr{padding:14px 16px; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,#0e1324,#0a0f1e)}
+  h1{margin:0 0 6px 0; font-weight:780; letter-spacing:.15px}
+  .mut{color:var(--mut)}
+  .grid{display:grid; gap:14px; grid-template-columns:1fr}
+  @media(min-width:980px){ .grid{grid-template-columns:1.05fr .95fr} }
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px 16px}
+  h2{margin:0 0 8px 0; font-size:20px}
+  h3{margin:10px 0 6px 0; font-size:16px; color:#C7D2FE}
+  input,textarea,select{width:100%; background:#0c1120; border:1px solid var(--line); color:var(--ink);
+    border-radius:12px; padding:10px 12px; font-size:14px}
+  button{background:#0c1120; color:var(--ink); border:1px solid var(--line); padding:9px 12px; border-radius:10px; cursor:pointer}
+  button:hover{background:#11162a}
+  .pill{border:1px solid var(--line); border-radius:999px; padding:6px 10px; color:var(--mut); background:#0c1020}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .three{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+  .meter{height:10px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#0a0e18}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg,var(--hi1),var(--hi2)); transition:width .25s ease}
+  .tbl{width:100%; border-collapse:collapse; font-size:13px}
+  .tbl th,.tbl td{padding:8px 6px; border-bottom:1px solid var(--line)}
+  .tbl th{color:#C7D2FE; text-align:left; font-weight:600}
+  .right{justify-content:flex-end}
+  pre{background:#0b0f1e; border:1px solid var(--line); border-radius:12px; padding:12px; overflow:auto; white-space:pre-wrap; word-wrap:break-word}
+  .shadow{color:#a1a9c8}
+  .api-section{background:linear-gradient(135deg, #0e1428 0%, #0a0f1e 100%); border:1px solid var(--hi2); margin-bottom:14px}
+  .api-row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .api-key-input{flex:1; min-width:200px; font-family:monospace; letter-spacing:1px}
+  .status-dot{width:10px; height:10px; border-radius:50%; background:var(--hi4); display:inline-block}
+  .status-dot.connected{background:var(--success)}
+  .status-dot.partial{background:var(--warning)}
+  .loading{opacity:0.6; pointer-events:none}
+  .spinner{display:inline-block; width:16px; height:16px; border:2px solid var(--line); border-top-color:var(--hi1); border-radius:50%; animation:spin 1s linear infinite; margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .gen-badge{font-size:11px; padding:3px 8px; border-radius:6px; background:var(--hi2); color:white; margin-left:8px}
+  .genre-btn{padding:8px 14px; border-radius:10px; border:1px solid var(--line); background:#0c1120; color:var(--mut); cursor:pointer; transition:all 0.2s}
+  .genre-btn:hover{border-color:var(--hi1); color:var(--ink)}
+  .genre-btn.active{border-color:var(--hi1); background:linear-gradient(135deg, #0c1a2a 0%, #0e1428 100%); color:var(--hi1); box-shadow:0 0 12px rgba(6,182,212,0.2)}
+  .genre-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(100px, 1fr)); gap:8px; margin:10px 0}
+  .library-section{border:1px solid var(--hi3); background:linear-gradient(135deg, #1a1408 0%, #0e1322 100%)}
+  .saved-item{display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border:1px solid var(--line); border-radius:8px; margin:4px 0; background:#0b0f1e}
+  .saved-item:hover{border-color:var(--hi1)}
+  .saved-title{flex:1; cursor:pointer}
+  .saved-meta{font-size:11px; color:var(--mut)}
+  .delete-btn{background:transparent; border:none; color:var(--hi4); cursor:pointer; padding:4px 8px}
+  .export-options{display:flex; gap:8px; flex-wrap:wrap}
+  .biometric-panel{border:1px solid var(--hi1); background:linear-gradient(135deg, #081018 0%, #0e1322 100%)}
+  .bio-status{display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:8px; background:#0a0e18; font-size:13px}
+  .bio-indicator{width:8px; height:8px; border-radius:50%; background:var(--hi4)}
+  .bio-indicator.active{background:var(--success); box-shadow:0 0 8px var(--success)}
+  .bio-value{font-family:monospace; color:var(--hi1)}
+  .webcam-container{position:relative; width:160px; height:120px; border-radius:8px; overflow:hidden; background:#000}
+  .webcam-container video{width:100%; height:100%; object-fit:cover}
+  .webcam-overlay{position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none}
+  .eye-box{position:absolute; border:2px solid var(--hi1); border-radius:4px}
+  .tts-btn{background:linear-gradient(135deg, #1a1040 0%, #0e1322 100%); border-color:var(--hi2)}
+  .tts-btn:hover{background:linear-gradient(135deg, #251560 0%, #141a30 100%)}
+  .tts-btn.speaking{animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+  .audio-viz{height:30px; display:flex; align-items:center; gap:2px; padding:0 10px}
+  .audio-bar{width:3px; background:var(--hi1); border-radius:2px; transition:height 0.1s}
+  kbd{background:#1a1f30; border:1px solid var(--line); border-radius:4px; padding:2px 6px; font-size:11px; color:var(--mut)}
+  
+  /* Theme toggle */
+  .theme-toggle{position:fixed; top:16px; right:16px; z-index:100; display:flex; gap:8px}
+  .theme-btn{width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:var(--panel); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center}
+  .theme-btn:hover{border-color:var(--hi1); transform:scale(1.1)}
+  
+  /* Light theme */
+  body.light{background:#f5f5f7; color:#1d1d1f}
+  body.light .wrap{background:#f5f5f7}
+  body.light .card, body.light .hdr{background:#ffffff; border-color:#d2d2d7}
+  body.light .pill{background:#f0f0f2; border-color:#d2d2d7; color:#6e6e73}
+  body.light input, body.light textarea, body.light select, body.light button{background:#ffffff; border-color:#d2d2d7; color:#1d1d1f}
+  body.light pre{background:#f0f0f2; border-color:#d2d2d7}
+  body.light .tbl th, body.light .tbl td{border-color:#d2d2d7}
+  body.light .meter{background:#e5e5ea; border-color:#d2d2d7}
+  body.light .mut{color:#6e6e73}
+  body.light .api-section{border-color:var(--hi2); background:linear-gradient(135deg, #f0e8ff 0%, #ffffff 100%)}
+  body.light .biometric-panel{border-color:var(--hi1); background:linear-gradient(135deg, #e8f8ff 0%, #ffffff 100%)}
+  body.light .library-section{border-color:var(--hi3); background:linear-gradient(135deg, #fff8e8 0%, #ffffff 100%)}
+  
+  /* Immersive/Fullscreen mode */
+  body.immersive{background:#000 !important}
+  body.immersive .wrap{max-width:800px; padding:40px 20px}
+  body.immersive .hdr, body.immersive .api-section, body.immersive .biometric-panel, 
+  body.immersive .genre-grid, body.immersive .library-section, body.immersive .theme-toggle,
+  body.immersive h2, body.immersive h3, body.immersive .row:not(.story-controls), 
+  body.immersive .tbl, body.immersive .meter, body.immersive .two, body.immersive .three{display:none !important}
+  body.immersive .grid{display:block !important}
+  body.immersive .card{background:transparent !important; border:none !important; padding:0}
+  body.immersive #story{font-size:22px; line-height:1.8; padding:40px; background:transparent; border:none; color:#e0e0e0; font-family:Georgia, serif; max-width:none}
+  body.immersive .story-controls{display:flex !important; justify-content:center; margin-top:30px; opacity:0.5; transition:opacity 0.3s}
+  body.immersive .story-controls:hover{opacity:1}
+  body.immersive .exit-immersive{display:block !important}
+  .exit-immersive{display:none}
+  .story-controls{display:flex; gap:10px; flex-wrap:wrap}
+  
+  /* Ambient particles */
+  .particles{position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1; overflow:hidden}
+  .particle{position:absolute; background:var(--hi1); border-radius:50%; opacity:0.15; animation:float 20s infinite}
+  @keyframes float{0%,100%{transform:translateY(100vh) rotate(0deg)}50%{transform:translateY(-10vh) rotate(180deg)}}
+  
+  /* Print styles */
+  @media print{
+    body{background:white !important; color:black !important}
+    .theme-toggle, .api-section, .biometric-panel, .genre-grid, button, .library-section, .meter, .tbl{display:none !important}
+    .card{border:none !important; box-shadow:none !important}
+    #story{font-size:14pt; line-height:1.6; padding:0; border:none; background:none}
+    .hdr{border:none; background:none; text-align:center}
+  }
+</style>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<div class="theme-toggle">
+  <button class="theme-btn" id="toggleLight" title="Light mode">☀️</button>
+  <button class="theme-btn" id="toggleImmersive" title="Immersive mode">🌙</button>
+  <button class="theme-btn" id="toggleAmbient" title="Ambient sounds">🔇</button>
+</div>
+<div class="wrap">
+  <section class="hdr">
+    <h1>QUANTUM ANTHOLOGY ENGINE</h1>
+    <div class="mut">Narrative as probability field. Superposition → Observation → Collapse. Residual timelines preserved.</div>
+    <div class="row" style="margin-top:8px">
+      <span class="pill">Void Library v1.0</span>
+      <span class="pill">Shadow Index enabled</span>
+      <span class="pill">AI-Powered</span>
+      <span class="pill">Biometrics</span>
+    </div>
+    <div class="row" style="margin-top:6px; gap:16px">
+      <span class="mut" style="font-size:12px"><kbd>⌘</kbd>+<kbd>Enter</kbd> Collapse</span>
+      <span class="mut" style="font-size:12px"><kbd>⌘</kbd>+<kbd>S</kbd> Save</span>
+      <span class="mut" style="font-size:12px"><kbd>Space</kbd> Read aloud</span>
+      <span class="mut" style="font-size:12px"><kbd>Esc</kbd> Stop all</span>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <h2>🎭 Genre & Mode</h2>
+    <div class="genre-grid" id="genreGrid">
+      <button class="genre-btn active" data-genre="literary">Literary</button>
+      <button class="genre-btn" data-genre="fantasy">Fantasy</button>
+      <button class="genre-btn" data-genre="scifi">Sci-Fi</button>
+      <button class="genre-btn" data-genre="horror">Horror</button>
+      <button class="genre-btn" data-genre="mystery">Mystery</button>
+      <button class="genre-btn" data-genre="romance">Romance</button>
+      <button class="genre-btn" data-genre="mythic">Mythic</button>
+      <button class="genre-btn" data-genre="ttrpg">TTRPG Oracle</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label class="pill">Custom themes</label>
+      <input id="customThemes" placeholder="Add your own: ancient ruins, AI uprising, lost kingdoms..." style="flex:1">
+    </div>
+  </section>
+
+  <section class="card api-section">
+    <h2>⚡ AI Engine Configuration</h2>
+    <div class="api-row">
+      <select id="aiProvider" style="width:140px">
+        <option value="openai">OpenAI (GPT-4)</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="local">Local/Offline</option>
+      </select>
+      <input id="apiKey" type="password" class="api-key-input" placeholder="Paste API key here (stored locally only)">
+      <button id="testApi">Test Connection</button>
+      <span class="pill"><span id="statusDot" class="status-dot"></span> <span id="statusText">Not connected</span></span>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label class="pill">Model</label>
+      <select id="aiModel" style="width:200px">
+        <option value="gpt-4o">GPT-4o (fast, smart)</option>
+        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+        <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (fast)</option>
+      </select>
+      <label class="pill">Temperature</label>
+      <input id="temperature" type="range" min="0" max="100" value="85" style="width:120px">
+      <span id="tempVal" class="mut">0.85</span>
+      <label class="pill">Max tokens</label>
+      <input id="maxTokens" type="number" value="500" min="100" max="2000" style="width:80px">
+    </div>
+  </section>
+
+  <section class="card biometric-panel">
+    <h2>🎯 Biometric Observer</h2>
+    <div class="mut">Let your body shape the narrative. Enable webcam for eye tracking or microphone for breath detection.</div>
+    <div class="row" style="margin-top:10px">
+      <div class="webcam-container" id="webcamContainer">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="webcamOverlay" class="webcam-overlay"></canvas>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--mut);font-size:12px;text-align:center" id="webcamPlaceholder">📷 Camera off</div>
+      </div>
+      <div style="flex:1">
+        <div class="row" style="gap:12px; flex-wrap:wrap">
+          <div class="bio-status">
+            <span class="bio-indicator" id="eyeIndicator"></span>
+            <span>Eyes detected:</span>
+            <span class="bio-value" id="eyeStatus">—</span>
+          </div>
+          <div class="bio-status">
+            <span class="bio-indicator" id="blinkIndicator"></span>
+            <span>Blink rate:</span>
+            <span class="bio-value" id="blinkStatus">—/min</span>
+          </div>
+          <div class="bio-status">
+            <span class="bio-indicator" id="gazeIndicator"></span>
+            <span>Gaze dwell:</span>
+            <span class="bio-value" id="gazeStatus">—ms</span>
+          </div>
+        </div>
+        <div class="row" style="gap:12px; margin-top:10px; flex-wrap:wrap">
+          <div class="bio-status">
+            <span class="bio-indicator" id="breathIndicator"></span>
+            <span>Breath rate:</span>
+            <span class="bio-value" id="breathStatus">—/min</span>
+          </div>
+          <div class="audio-viz" id="audioViz">
+            <div class="audio-bar" style="height:5px"></div>
+            <div class="audio-bar" style="height:5px"></div>
+            <div class="audio-bar" style="height:5px"></div>
+            <div class="audio-bar" style="height:5px"></div>
+            <div class="audio-bar" style="height:5px"></div>
+            <div class="audio-bar" style="height:5px"></div>
+            <div class="audio-bar" style="height:5px"></div>
+            <div class="audio-bar" style="height:5px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="startWebcam">📷 Start Webcam</button>
+      <button id="startMic">🎤 Start Microphone</button>
+      <button id="stopBiometrics">⏹ Stop All</button>
+      <label class="pill" style="margin-left:auto">
+        <input type="checkbox" id="autoSync" checked> Auto-sync to observer fields
+      </label>
+    </div>
+  </section>
+
+  <section class="grid" style="margin-top:14px">
+    <div class="card">
+      <h2>1) Seed the Field</h2>
+      <textarea id="seed" rows="3" placeholder="Seed prompt">What happens when silence speaks?</textarea>
+      <div class="row small" style="margin-top:6px">
+        <label class="pill">Field size</label>
+        <select id="fieldSize">
+          <option>32</option><option selected>64</option><option>128</option>
+        </select>
+        <label class="pill">Novelty bias</label>
+        <input id="novelty" type="range" min="0" max="100" value="40" style="width:200px">
+        <span id="noveltyVal" class="mut">0.40</span>
+        <button id="generate">Superpose</button>
+      </div>
+
+      <h2 style="margin-top:12px">2) Observer (attention as instrument)</h2>
+      <div class="three">
+        <div>
+          <label>Gaze dwell (ms)</label>
+          <input id="gaze" type="number" value="1200" min="50" max="5000">
+        </div>
+        <div>
+          <label>Breath cadence (br/min)</label>
+          <input id="brpm" type="number" value="12" min="4" max="40">
+        </div>
+        <div>
+          <label>Blink rate (per min)</label>
+          <input id="blink" type="number" value="18" min="1" max="60">
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label class="pill">Focus phrase</label>
+        <input id="focus" placeholder="e.g., absence, echo, threshold, mercy, recursion" style="flex:1">
+        <button id="collapse">Observe → Collapse</button>
+        <button id="reroll">Re-collide (same focus)</button>
+      </div>
+
+      <div class="two" style="margin-top:12px">
+        <div>
+          <div class="row"><div class="pill">Field entropy</div></div>
+          <div class="meter" style="margin-top:6px"><div id="bar_entropy" class="bar"></div></div>
+        </div>
+        <div>
+          <div class="row"><div class="pill">Observer influence</div></div>
+          <div class="meter" style="margin-top:6px"><div id="bar_infl" class="bar" style="background:linear-gradient(90deg,var(--hi3),var(--hi4))"></div></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:10px">Collapsed Narrative</h3>
+      <pre id="story"></pre>
+      <div class="row story-controls" style="margin-top:8px">
+        <button id="speakStory" class="tts-btn">🔊 Read Aloud</button>
+        <button id="stopSpeech" class="tts-btn">⏹ Stop</button>
+        <select id="voiceSelect" style="width:180px">
+          <option>Loading voices...</option>
+        </select>
+        <label class="pill">Speed</label>
+        <input id="speechRate" type="range" min="50" max="150" value="90" style="width:80px">
+        <span id="rateVal" class="mut">0.9x</span>
+        <button id="printStory">🖨️ Print</button>
+        <button id="exitImmersive" class="exit-immersive">Exit Immersive</button>
+      </div>
+
+      <h3>Residual Field (shadow drafts)</h3>
+      <table class="tbl" id="shadowTbl" aria-label="Shadow Index">
+        <thead><tr><th>#</th><th>Theme</th><th>Tone</th><th>Motif</th><th>p*</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="row right" style="margin-top:8px">
+        <div class="export-options">
+          <button id="export">Export JSON</button>
+          <button id="exportMd">Export Markdown</button>
+          <button id="copyStory">Copy to Clipboard</button>
+          <button id="saveToLibrary">💾 Save to Library</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3) Probability Field</h2>
+      <div class="mut small">Live latent states (top 16 by weight)</div>
+      <table class="tbl" id="fieldTbl">
+        <thead><tr><th>#</th><th>Theme</th><th>Tone</th><th>Structure</th><th>Motif</th><th>Weight</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2 style="margin-top:12px">Master Prompt (copy)</h2>
+      <pre id="prompt">
+# QUANTUM ANTHOLOGY ENGINE — Observation-Collapse Prompt (© 2025 JL West)
+Given:
+- Seed prompt S
+- Field size N ∈ {32,64,128}
+- Observer metrics: gaze_ms, brpm, blink_per_min, focus_phrase
+- Latent field: narrative states with {theme, tone, structure, motif, base_weight}
+
+Compute:
+1) Normalize base_weight across N.
+2) Derive observer modifier ω = f(gaze_ms, brpm, blink, focus) where:
+   - longer gaze amplifies tone continuity
+   - slower breath biases contemplative themes
+   - lower blink increases motif coherence
+   - focus phrase soft-matches theme/motif via cosine sim
+3) Collapse: select one state by categorical draw proportional to weight*ω.
+4) Render: ~120–180 words prose-poem consistent with selected {theme,tone,structure,motif}.
+5) Output residuals: top 12 unchosen states with posterior weights as Shadow Index.
+
+Return blocks:
+— STORY
+— SHADOW_INDEX (table)
+— METRICS {entropy, influence, seed, focus}
+      </pre>
+      <div class="row"><button id="copyPrompt">Copy</button></div>
+    </div>
+  </section>
+
+  <section class="card library-section" style="margin-top:14px">
+    <h2>📚 Your Library</h2>
+    <div class="mut">Saved narratives (stored locally in your browser)</div>
+    <div id="libraryList" style="margin-top:10px; max-height:300px; overflow-y:auto">
+      <div class="mut" style="text-align:center; padding:20px">No saved narratives yet. Generate one and click "Save to Library".</div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="exportLibrary">Export All</button>
+      <button id="importLibrary">Import Library</button>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+      <button id="clearLibrary" style="margin-left:auto; border-color:var(--hi4)">Clear All</button>
+    </div>
+  </section>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// AI API INTEGRATION
+// ═══════════════════════════════════════════════════════════════
+
+const API_ENDPOINTS = {
+  openai: 'https://api.openai.com/v1/chat/completions',
+  anthropic: 'https://api.anthropic.com/v1/messages'
+};
+
+async function callOpenAI(prompt, systemPrompt) {
+  const apiKey = $('apiKey').value.trim();
+  const model = $('aiModel').value;
+  const temp = parseInt($('temperature').value) / 100;
+  const maxTokens = parseInt($('maxTokens').value);
+
+  const response = await fetch(API_ENDPOINTS.openai, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+      ],
+      temperature: temp,
+      max_tokens: maxTokens
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || 'OpenAI API error');
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+async function callAnthropic(prompt, systemPrompt) {
+  const apiKey = $('apiKey').value.trim();
+  const model = $('aiModel').value;
+  const temp = parseInt($('temperature').value) / 100;
+  const maxTokens = parseInt($('maxTokens').value);
+
+  const response = await fetch(API_ENDPOINTS.anthropic, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: prompt }
+      ],
+      temperature: temp
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || 'Anthropic API error');
+  }
+
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+async function generateWithAI(state, focus, seed, observerMetrics) {
+  const provider = $('aiProvider').value;
+  
+  if (provider === 'local') {
+    return proseFromState(seed, state, focus); // fallback to template
+  }
+
+  const systemPrompt = `You are the QUANTUM ANTHOLOGY ENGINE, a literary oracle that writes prose-poems at the intersection of physics metaphor and mythic storytelling. 
+
+Your voice is: lyrical but precise, strange but grounded, ancient but aware of algorithms.
+
+CONSTRAINTS:
+- Write 120-200 words
+- Use concrete sensory images, not abstractions
+- Each piece should feel like a fragment from an infinite library
+- Maintain the chosen tone throughout
+- Weave the motif naturally, don't force it
+- End with resonance, not resolution`;
+
+  const userPrompt = `COLLAPSE THIS NARRATIVE STATE:
+
+Seed thought: "${seed}"
+Theme: ${state.theme}
+Tone: ${state.tone}  
+Structure: ${state.structure}
+Motif: ${state.motif}
+Focus phrase: "${focus || 'none specified'}"
+
+OBSERVER METRICS (let these subtly influence the piece):
+- Gaze dwell: ${observerMetrics.gaze}ms (${observerMetrics.gaze > 1500 ? 'slow, contemplative observer' : observerMetrics.gaze < 800 ? 'quick, scanning observer' : 'measured observer'})
+- Breath rate: ${observerMetrics.brpm} breaths/min (${observerMetrics.brpm < 10 ? 'deep calm' : observerMetrics.brpm > 16 ? 'alert, activated' : 'natural rhythm'})
+- Blink rate: ${observerMetrics.blink}/min (${observerMetrics.blink < 12 ? 'intense focus' : observerMetrics.blink > 20 ? 'relaxed attention' : 'normal'})
+
+Write the collapsed narrative now. No preamble, no explanation—just the prose-poem.`;
+
+  try {
+    if (provider === 'openai') {
+      return await callOpenAI(userPrompt, systemPrompt);
+    } else if (provider === 'anthropic') {
+      return await callAnthropic(userPrompt, systemPrompt);
+    }
+  } catch (error) {
+    console.error('AI Generation failed:', error);
+    throw error;
+  }
+}
+
+async function testConnection() {
+  const provider = $('aiProvider').value;
+  const apiKey = $('apiKey').value.trim();
+  const statusDot = $('statusDot');
+  const statusText = $('statusText');
+
+  if (provider === 'local') {
+    statusDot.className = 'status-dot connected';
+    statusText.textContent = 'Local mode (no API)';
+    return true;
+  }
+
+  if (!apiKey) {
+    statusDot.className = 'status-dot';
+    statusText.textContent = 'No API key';
+    return false;
+  }
+
+  statusText.textContent = 'Testing...';
+  
+  try {
+    if (provider === 'openai') {
+      await callOpenAI('Say "connected" and nothing else.', 'You are a connection test. Reply with only the word "connected".');
+    } else if (provider === 'anthropic') {
+      await callAnthropic('Say "connected" and nothing else.', 'You are a connection test. Reply with only the word "connected".');
+    }
+    statusDot.className = 'status-dot connected';
+    statusText.textContent = 'Connected ✓';
+    // Save to localStorage
+    localStorage.setItem('qae_provider', provider);
+    localStorage.setItem('qae_apiKey', apiKey);
+    localStorage.setItem('qae_model', $('aiModel').value);
+    return true;
+  } catch (error) {
+    statusDot.className = 'status-dot';
+    statusText.textContent = 'Error: ' + error.message.slice(0, 30);
+    return false;
+  }
+}
+
+// Load saved settings
+function loadSavedSettings() {
+  const savedProvider = localStorage.getItem('qae_provider');
+  const savedKey = localStorage.getItem('qae_apiKey');
+  const savedModel = localStorage.getItem('qae_model');
+  
+  if (savedProvider) $('aiProvider').value = savedProvider;
+  if (savedKey) $('apiKey').value = savedKey;
+  if (savedModel) $('aiModel').value = savedModel;
+  
+  updateModelOptions();
+  if (savedKey) testConnection();
+}
+
+function updateModelOptions() {
+  const provider = $('aiProvider').value;
+  const modelSelect = $('aiModel');
+  
+  if (provider === 'openai') {
+    modelSelect.innerHTML = `
+      <option value="gpt-4o">GPT-4o (fast, smart)</option>
+      <option value="gpt-4o-mini">GPT-4o Mini (cheaper)</option>
+      <option value="gpt-4-turbo">GPT-4 Turbo</option>
+    `;
+  } else if (provider === 'anthropic') {
+    modelSelect.innerHTML = `
+      <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+      <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (fast)</option>
+      <option value="claude-3-opus-20240229">Claude 3 Opus (powerful)</option>
+    `;
+  } else {
+    modelSelect.innerHTML = `<option value="local">Template Generation</option>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ORIGINAL ENGINE CODE
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// BIOMETRIC DETECTION
+// ═══════════════════════════════════════════════════════════════
+
+let webcamStream = null;
+let micStream = null;
+let audioContext = null;
+let analyser = null;
+let blinkHistory = [];
+let gazeStartTime = Date.now();
+let breathCycles = [];
+let lastBreathPeak = 0;
+let eyeDetectionInterval = null;
+let breathDetectionInterval = null;
+
+async function startWebcam() {
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({ 
+      video: { width: 320, height: 240, facingMode: 'user' } 
+    });
+    const video = $('webcam');
+    video.srcObject = webcamStream;
+    $('webcamPlaceholder').style.display = 'none';
+    
+    // Start simple eye/blink detection using brightness changes
+    startEyeDetection();
+    
+    $('eyeIndicator').classList.add('active');
+    $('blinkIndicator').classList.add('active');
+    $('gazeIndicator').classList.add('active');
+  } catch (err) {
+    alert('Webcam access denied or unavailable: ' + err.message);
+  }
+}
+
+function startEyeDetection() {
+  const video = $('webcam');
+  const canvas = $('webcamOverlay');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 160;
+  canvas.height = 120;
+  
+  let lastBrightness = 0;
+  let blinkThreshold = 15;
+  let gazeStable = true;
+  
+  eyeDetectionInterval = setInterval(() => {
+    if (!webcamStream) return;
+    
+    ctx.drawImage(video, 0, 0, 160, 120);
+    const imageData = ctx.getImageData(40, 20, 80, 40); // Eye region
+    
+    // Calculate average brightness of eye region
+    let brightness = 0;
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      brightness += (imageData.data[i] + imageData.data[i+1] + imageData.data[i+2]) / 3;
+    }
+    brightness /= (imageData.data.length / 4);
+    
+    // Detect blinks (sudden brightness drop)
+    const brightnessDelta = lastBrightness - brightness;
+    if (brightnessDelta > blinkThreshold && lastBrightness > 0) {
+      blinkHistory.push(Date.now());
+      // Keep only last 60 seconds
+      const oneMinAgo = Date.now() - 60000;
+      blinkHistory = blinkHistory.filter(t => t > oneMinAgo);
+    }
+    lastBrightness = brightness;
+    
+    // Calculate blink rate
+    const blinkRate = blinkHistory.length;
+    $('blinkStatus').textContent = blinkRate + '/min';
+    
+    // Gaze stability (simplified - based on brightness variance)
+    const gazeDwell = Date.now() - gazeStartTime;
+    $('gazeStatus').textContent = Math.min(gazeDwell, 5000) + 'ms';
+    
+    // Eye detection status
+    $('eyeStatus').textContent = brightness > 30 ? 'Yes' : 'Low light';
+    
+    // Draw detection box
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(40, 20, 80, 40);
+    
+    // Auto-sync to observer fields
+    if ($('autoSync').checked) {
+      $('blink').value = blinkRate;
+      $('gaze').value = Math.min(gazeDwell, 5000);
+    }
+  }, 100);
+}
+
+async function startMicrophone() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaStreamSource(micStream);
+    source.connect(analyser);
+    analyser.fftSize = 256;
+    
+    $('breathIndicator').classList.add('active');
+    startBreathDetection();
+  } catch (err) {
+    alert('Microphone access denied or unavailable: ' + err.message);
+  }
+}
+
+function startBreathDetection() {
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  const bars = $('audioViz').querySelectorAll('.audio-bar');
+  
+  let smoothedVolume = 0;
+  let lastPeakTime = Date.now();
+  let inBreath = false;
+  
+  breathDetectionInterval = setInterval(() => {
+    if (!analyser) return;
+    
+    analyser.getByteFrequencyData(dataArray);
+    
+    // Calculate low-frequency energy (breath is low freq)
+    let lowFreqEnergy = 0;
+    for (let i = 0; i < 10; i++) {
+      lowFreqEnergy += dataArray[i];
+    }
+    lowFreqEnergy /= 10;
+    
+    // Smooth the signal
+    smoothedVolume = smoothedVolume * 0.8 + lowFreqEnergy * 0.2;
+    
+    // Visualize
+    bars.forEach((bar, i) => {
+      const height = Math.max(5, dataArray[i * 4] / 8);
+      bar.style.height = height + 'px';
+    });
+    
+    // Detect breath cycles (peaks in low freq)
+    const threshold = 40;
+    if (smoothedVolume > threshold && !inBreath) {
+      inBreath = true;
+      const now = Date.now();
+      if (now - lastPeakTime > 1500) { // Min 1.5s between breaths
+        breathCycles.push(now);
+        lastPeakTime = now;
+      }
+    } else if (smoothedVolume < threshold * 0.6) {
+      inBreath = false;
+    }
+    
+    // Keep only last 60 seconds
+    const oneMinAgo = Date.now() - 60000;
+    breathCycles = breathCycles.filter(t => t > oneMinAgo);
+    
+    // Calculate breath rate
+    const breathRate = breathCycles.length;
+    $('breathStatus').textContent = breathRate + '/min';
+    
+    // Auto-sync
+    if ($('autoSync').checked && breathRate > 0) {
+      $('brpm').value = breathRate;
+    }
+  }, 100);
+}
+
+function stopBiometrics() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(track => track.stop());
+    webcamStream = null;
+    $('webcam').srcObject = null;
+    $('webcamPlaceholder').style.display = 'block';
+  }
+  
+  if (micStream) {
+    micStream.getTracks().forEach(track => track.stop());
+    micStream = null;
+  }
+  
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+    analyser = null;
+  }
+  
+  if (eyeDetectionInterval) {
+    clearInterval(eyeDetectionInterval);
+    eyeDetectionInterval = null;
+  }
+  
+  if (breathDetectionInterval) {
+    clearInterval(breathDetectionInterval);
+    breathDetectionInterval = null;
+  }
+  
+  // Reset indicators
+  ['eyeIndicator', 'blinkIndicator', 'gazeIndicator', 'breathIndicator'].forEach(id => {
+    $(id).classList.remove('active');
+  });
+  
+  $('eyeStatus').textContent = '—';
+  $('blinkStatus').textContent = '—/min';
+  $('gazeStatus').textContent = '—ms';
+  $('breathStatus').textContent = '—/min';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEXT-TO-SPEECH
+// ═══════════════════════════════════════════════════════════════
+
+let speechSynth = window.speechSynthesis;
+let currentUtterance = null;
+let voices = [];
+
+function loadVoices() {
+  voices = speechSynth.getVoices();
+  const select = $('voiceSelect');
+  select.innerHTML = '';
+  
+  // Prefer English voices, prioritize "enhanced" or "premium"
+  const sortedVoices = voices
+    .filter(v => v.lang.startsWith('en'))
+    .sort((a, b) => {
+      const aScore = (a.name.includes('Enhanced') || a.name.includes('Premium')) ? 1 : 0;
+      const bScore = (b.name.includes('Enhanced') || b.name.includes('Premium')) ? 1 : 0;
+      return bScore - aScore;
+    });
+  
+  if (sortedVoices.length === 0) {
+    // Fallback to all voices
+    sortedVoices.push(...voices.slice(0, 20));
+  }
+  
+  sortedVoices.forEach((voice, i) => {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = voice.name.slice(0, 30) + (voice.name.length > 30 ? '...' : '');
+    option.dataset.voiceUri = voice.voiceURI;
+    select.appendChild(option);
+  });
+}
+
+function speakStory() {
+  if (speechSynth.speaking) {
+    speechSynth.cancel();
+  }
+  
+  const story = ($('story').textContent || '').replace(/AI Generated$/, '').trim();
+  if (!story || story.includes('field superposed')) {
+    alert('Generate a narrative first!');
+    return;
+  }
+  
+  currentUtterance = new SpeechSynthesisUtterance(story);
+  
+  // Set voice
+  const select = $('voiceSelect');
+  const selectedOption = select.options[select.selectedIndex];
+  if (selectedOption && selectedOption.dataset.voiceUri) {
+    const voice = voices.find(v => v.voiceURI === selectedOption.dataset.voiceUri);
+    if (voice) currentUtterance.voice = voice;
+  }
+  
+  // Set rate
+  currentUtterance.rate = parseInt($('speechRate').value) / 100;
+  currentUtterance.pitch = 1;
+  
+  // Visual feedback
+  $('speakStory').classList.add('speaking');
+  currentUtterance.onend = () => $('speakStory').classList.remove('speaking');
+  currentUtterance.onerror = () => $('speakStory').classList.remove('speaking');
+  
+  speechSynth.speak(currentUtterance);
+}
+
+function stopSpeech() {
+  speechSynth.cancel();
+  $('speakStory').classList.remove('speaking');
+}
+
+// Load voices (they load async)
+speechSynth.onvoiceschanged = loadVoices;
+loadVoices();
+
+// ═══════════════════════════════════════════════════════════════
+// THEME & IMMERSIVE MODE
+// ═══════════════════════════════════════════════════════════════
+
+function toggleLightMode() {
+  document.body.classList.toggle('light');
+  document.body.classList.remove('immersive');
+  localStorage.setItem('qae_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+
+function toggleImmersiveMode() {
+  document.body.classList.toggle('immersive');
+  document.body.classList.remove('light');
+  if (document.body.classList.contains('immersive')) {
+    // Request fullscreen
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  } else {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+}
+
+function exitImmersiveMode() {
+  document.body.classList.remove('immersive');
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('qae_theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+// ═══════════════════════════════════════════════════════════════
+// AMBIENT AUDIO
+// ═══════════════════════════════════════════════════════════════
+
+let ambientAudioCtx = null;
+let ambientPlaying = false;
+let ambientOscillators = [];
+
+function startAmbient() {
+  if (ambientPlaying) {
+    stopAmbient();
+    return;
+  }
+  
+  ambientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
+  // Create layered ambient drones
+  const frequencies = [55, 82.5, 110, 165]; // A1, E2, A2, E3
+  
+  frequencies.forEach((freq, i) => {
+    const osc = ambientAudioCtx.createOscillator();
+    const gain = ambientAudioCtx.createGain();
+    const filter = ambientAudioCtx.createBiquadFilter();
+    
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    
+    // Subtle frequency modulation
+    const lfo = ambientAudioCtx.createOscillator();
+    const lfoGain = ambientAudioCtx.createGain();
+    lfo.frequency.value = 0.05 + (i * 0.02);
+    lfoGain.gain.value = freq * 0.01;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+    lfo.start();
+    
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+    
+    gain.gain.value = 0;
+    gain.gain.linearRampToValueAtTime(0.08 / frequencies.length, ambientAudioCtx.currentTime + 3);
+    
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ambientAudioCtx.destination);
+    osc.start();
+    
+    ambientOscillators.push({ osc, gain, lfo });
+  });
+  
+  ambientPlaying = true;
+  $('toggleAmbient').textContent = '🔊';
+}
+
+function stopAmbient() {
+  if (!ambientPlaying) return;
+  
+  ambientOscillators.forEach(({ osc, gain, lfo }) => {
+    gain.gain.linearRampToValueAtTime(0, ambientAudioCtx.currentTime + 1);
+    setTimeout(() => {
+      osc.stop();
+      lfo.stop();
+    }, 1100);
+  });
+  
+  ambientOscillators = [];
+  ambientPlaying = false;
+  $('toggleAmbient').textContent = '🔇';
+  
+  setTimeout(() => {
+    if (ambientAudioCtx) {
+      ambientAudioCtx.close();
+      ambientAudioCtx = null;
+    }
+  }, 1200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FLOATING PARTICLES
+// ═══════════════════════════════════════════════════════════════
+
+function createParticles() {
+  const container = $('particles');
+  for (let i = 0; i < 20; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.width = (Math.random() * 4 + 2) + 'px';
+    particle.style.height = particle.style.width;
+    particle.style.animationDelay = (Math.random() * 20) + 's';
+    particle.style.animationDuration = (15 + Math.random() * 15) + 's';
+    container.appendChild(particle);
+  }
+}
+createParticles();
+
+// Current genre
+let CURRENT_GENRE = 'literary';
+
+// Genre-specific vocabularies
+const GENRE_VOCAB = {
+  literary: {
+    themes: ["identity recursion","memory decay","unwritten future","cosmic empathy","forbidden cartography","ancestral radio","merciful machine","threshold theology","echo topologies","quiet rebellions"],
+    tones: ["melancholic","absurdist","sacred","scientific","tender","clinical","mythic","wry"],
+    structures: ["episodic fragments","single breath sentence","braided timelines","lab notebook entries","prayer-and-footnote","catalog form","choral voices"],
+    motifs: ["keys & doors","salt & iron","mirrors & dust","birds & static","seams & stitches","paper & flame","roads & thresholds","algorithms & rain"]
+  },
+  fantasy: {
+    themes: ["forgotten kingdoms","blood prophecy","the old gods waking","dragon-bonded souls","the price of magic","throne of thorns","realm between worlds","the last enchantment","cursed bloodlines","fey bargains"],
+    tones: ["epic","elegiac","dark","whimsical","heroic","tragic","mysterious","ancient"],
+    structures: ["chronicle entries","prophecy fragments","bardic verses","map marginalia","spell incantations","oath declarations","legend retellings"],
+    motifs: ["crowns & chains","fire & ice","swords & shadows","stars & stones","blood & bone","gold & ash","roots & wings","runes & riddles"]
+  },
+  scifi: {
+    themes: ["first contact protocols","consciousness upload","generation ship decay","AI awakening","colony collapse","time dilation grief","posthuman evolution","the fermi silence","quantum entanglement love","terraforming ethics"],
+    tones: ["clinical","wonder-struck","dystopian","hopeful","noir","philosophical","urgent","cold"],
+    structures: ["ship log entries","research notes","transmission fragments","memory downloads","sensor readouts","mission briefings","encrypted messages"],
+    motifs: ["stars & void","metal & flesh","light & dark matter","code & chaos","orbits & decay","signals & silence","gravity & escape","data & dreams"]
+  },
+  horror: {
+    themes: ["the thing in the walls","inherited curses","wrong geometry","parasitic thoughts","memory infection","the smile that spreads","threshold entities","deep water secrets","familiar made strange","the watching dark"],
+    tones: ["dread-soaked","clinical","creeping","visceral","cosmic","psychological","folk","body"],
+    structures: ["found footage notes","case files","fever journals","final recordings","autopsy reports","ritual fragments","witness statements"],
+    motifs: ["doors & depths","teeth & eyes","rot & growth","mirrors & doubles","static & whispers","holes & hollows","hands & hunger","sleep & screaming"]
+  },
+  mystery: {
+    themes: ["the locked room","vanishing witness","inherited secrets","cold case awakened","the unreliable narrator","patterns in chaos","the missing hour","identity theft","the perfect alibi","ghosts of evidence"],
+    tones: ["noir","procedural","psychological","cozy","hardboiled","atmospheric","paranoid","methodical"],
+    structures: ["case notes","interview transcripts","evidence logs","timeline reconstructions","suspect profiles","newspaper clippings","deathbed confessions"],
+    motifs: ["keys & locks","shadows & light","lies & truth","masks & faces","clocks & alibis","prints & traces","letters & secrets","glass & reflections"]
+  },
+  romance: {
+    themes: ["second chances","forbidden connection","slow burn revelation","enemies to lovers","missed connections","healing together","love across divides","the one who stayed","unspoken years","finding home"],
+    tones: ["tender","yearning","passionate","bittersweet","playful","intense","gentle","consuming"],
+    structures: ["letters unsent","diary entries","memory montage","dual perspectives","vows rewritten","confessions delayed","morning-after clarity"],
+    motifs: ["hands & hearts","distance & doorways","seasons & storms","scars & healing","names & nicknames","kitchens & comfort","rain & reunion","silence & saying"]
+  },
+  mythic: {
+    themes: ["the hero's descent","trickster wisdom","sacred marriage","world-tree roots","the dying god","mother of monsters","the eternal return","threshold guardians","gift of fire","the flood remembers"],
+    tones: ["oracular","primal","ceremonial","transformative","cyclical","elemental","archetypal","numinous"],
+    structures: ["oral tradition fragments","temple inscriptions","dream visions","ritual librettos","creation chants","death songs","hero catalogs"],
+    motifs: ["sun & moon","serpent & eagle","blood & water","bone & seed","mountain & cave","thread & labyrinth","mask & mirror","sacrifice & renewal"]
+  },
+  ttrpg: {
+    themes: ["the dungeon breathes","faction tensions rise","artifact awakening","patron demands","quest complications","NPC secrets revealed","world-building hooks","encounter escalation","lore discoveries","character backstory seeds"],
+    tones: ["ominous","intriguing","urgent","mysterious","threatening","wondrous","tactical","dramatic"],
+    structures: ["rumor table entries","location descriptions","NPC motivations","quest hooks","random encounters","treasure descriptions","lore fragments"],
+    motifs: ["gold & danger","doors & traps","allies & betrayers","maps & secrets","power & cost","choices & consequences","rest & ambush","legend & reality"]
+  }
+};
+
+// utils
+function $(id){return document.getElementById(id)}
+function clamp(v,a,b){return Math.min(b, Math.max(a,v))}
+function hash32(str){let h=2166136261>>>0; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i); h=Math.imul(h,16777619)} return h>>>0}
+function rng(seed){let s=seed>>>0; return function(){s = (s*1664525 + 1013904223)>>>0; return (s>>>0)/4294967296}}
+function sigmoid(x){return 1/(1+Math.exp(-x))}
+
+// Get current vocabulary based on genre + custom themes
+function getVocab() {
+  const base = GENRE_VOCAB[CURRENT_GENRE] || GENRE_VOCAB.literary;
+  const custom = $('customThemes').value.trim();
+  
+  if (custom) {
+    const customThemes = custom.split(',').map(t => t.trim()).filter(t => t);
+    return {
+      themes: [...base.themes, ...customThemes],
+      tones: base.tones,
+      structures: base.structures,
+      motifs: base.motifs
+    };
+  }
+  return base;
+}
+
+// vocab - now dynamically loaded
+const THEMES = ["identity recursion","memory decay","unwritten future","cosmic empathy","forbidden cartography","ancestral radio","merciful machine","threshold theology","echo topologies","quiet rebellions"];
+const TONES  = ["melancholic","absurdist","sacred","scientific","tender","clinical","mythic","wry"];
+const STRUCT = ["episodic fragments","single breath sentence","braided timelines","lab notebook entries","prayer-and-footnote","catalog form","choral voices"];
+const MOTIF  = ["keys & doors","salt & iron","mirrors & dust","birds & static","seams & stitches","paper & flame","roads & thresholds","algorithms & rain"];
+
+let FIELD = [];
+let LAST_COLLAPSE = null;
+
+function dirichlet(r, n){
+  const g = [];
+  for(let i=0;i<n;i++){ // gamma(1+r) ~ exponential-ish
+    let u = Math.random(); g.push(-Math.log(u+1e-9) ** (1/(1+r))); 
+  }
+  const sum = g.reduce((a,b)=>a+b,0);
+  return g.map(x=>x/sum);
+}
+
+function buildField(seed, N, novelty){
+  const s = hash32(seed + "|" + N + "|" + novelty + "|" + CURRENT_GENRE);
+  const rnd = rng(s);
+  // base weights with novelty (higher novelty -> flatter, more entropy)
+  const base = [];
+  for(let i=0;i<N;i++){ base.push(Math.exp((rnd()-0.5)*(0.8 + novelty/120))) }
+  const sum = base.reduce((a,b)=>a+b,0);
+  const weights = base.map(x=>x/sum);
+
+  const vocab = getVocab();
+  const pick = (arr)=> arr[Math.floor(rnd()*arr.length)];
+  const states = [];
+  for(let i=0;i<N;i++){
+    states.push({
+      id: i+1,
+      theme: pick(vocab.themes),
+      tone: pick(vocab.tones),
+      structure: pick(vocab.structures),
+      motif: pick(vocab.motifs),
+      base: weights[i]
+    });
+  }
+  return states;
+}
+
+function observerInfluence(gaze, brpm, blink, focus, state){
+  // gaze: longer -> tone continuity bonus if tone in {sacred,tender,clinical}
+  const toneBonus = (["sacred","tender","clinical"].includes(state.tone) ? sigmoid((gaze-800)/600) : sigmoid((gaze-1100)/700));
+  // breath: slower -> contemplative themes bonus
+  const slow = clamp((18 - brpm)/10, -1, 1);
+  const themeBonus = sigmoid(slow + (["identity recursion","cosmic empathy","threshold theology","quiet rebellions"].includes(state.theme)?0.6:0.0));
+  // blink: lower -> motif coherence bonus
+  const blinkAdj = clamp((22 - blink)/12, -1, 1);
+  const motifBonus = sigmoid(blinkAdj + (["keys & doors","mirrors & dust","roads & thresholds"].includes(state.motif)?0.5:0.0));
+  // focus: soft-match term presence
+  const f = (focus||"").toLowerCase();
+  const match = [state.theme,state.motif,state.structure,state.tone].join(" ").toLowerCase();
+  const focusBonus = f? sigmoid((match.includes(f)?1.4: -0.2)) : 1.0;
+
+  // combine multiplicatively, normalize around ~1
+  return (0.85 + 0.6*toneBonus) * (0.85 + 0.6*themeBonus) * (0.85 + 0.6*motifBonus) * (0.70 + 0.6*focusBonus);
+}
+
+function entropyOf(weights){
+  const eps=1e-9; let H=0;
+  for(const w of weights){ H += -w*Math.log2(w+eps) }
+  const Hmax = Math.log2(weights.length);
+  return clamp(H/Hmax, 0, 1);
+}
+
+function renderFieldTable(states){
+  const tbody = $("fieldTbl").querySelector("tbody");
+  tbody.innerHTML = "";
+  const ranked = [...states].sort((a,b)=>b.post - a.post).slice(0,16);
+  ranked.forEach((s,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `<td>${i+1}</td><td>${s.theme}</td><td>${s.tone}</td><td>${s.structure}</td><td>${s.motif}</td><td>${s.post.toFixed(3)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderShadow(states, chosenId){
+  const tbody = $("shadowTbl").querySelector("tbody");
+  tbody.innerHTML = "";
+  const ranked = [...states].filter(s=>s.id!==chosenId).sort((a,b)=>b.post - a.post).slice(0,12);
+  ranked.forEach((s,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `<td>${i+1}</td><td>${s.theme}</td><td>${s.tone}</td><td>${s.motif}</td><td>${s.post.toFixed(3)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function proseFromState(seed, state, focus){
+  const images = {
+    "identity recursion":["mirrors", "names", "versions of you that almost were"],
+    "memory decay":["salt roads", "paper weather", "photographs that forget first"],
+    "unwritten future":["blank calendars", "keys with no doors", "the rumor of a horizon"],
+    "cosmic empathy":["radio constellations", "friendly gravity", "breath shared by comets"],
+    "forbidden cartography":["maps of absence", "borders that move at night", "compasses that point to wanting"],
+    "ancestral radio":["stations between stations", "voices braided with static", "letters never sent"],
+    "merciful machine":["tender algorithms", "gauze made of logic", "forgiveness in assembly"],
+    "threshold theology":["doorframes as scriptures", "liturgies of almost", "saints of the hinge"],
+    "echo topologies":["rooms shaped like answers", "footsteps that arrive before you", "the hallway that remembers"],
+    "quiet rebellions":["small refusals", "tea that never boils", "the peace after the argument"]
+  };
+  const tones = {
+    "melancholic":"in a voice like late rain, patient and exact",
+    "absurdist":"with a grin that knows the rules are props",
+    "sacred":"like a psalm wearing work boots",
+    "scientific":"as if the lab coat learned to pray",
+    "tender":"so gently the sentence doesn't spill",
+    "clinical":"with clean hands and measured breath",
+    "mythic":"as if an older tongue is clearing its throat",
+    "wry":"with one lifted brow and a soft mercy"
+  };
+  const motifs = {
+    "keys & doors":"locks remember the hands that left",
+    "salt & iron":"minerals explain what blood cannot",
+    "mirrors & dust":"reflections keep their own secrets",
+    "birds & static":"flight patterned like snow on dead channels",
+    "seams & stitches":"mending becomes a kind of cartography",
+    "paper & flame":"archives negotiate with heat",
+    "roads & thresholds":"distance rehearses its arrivals",
+    "algorithms & rain":"logic finally agrees to get wet"
+  };
+  const imgs = images[state.theme]; const tone = tones[state.tone]; const mot = motifs[state.motif];
+  const fline = focus? `You aimed your attention at “${focus},” and the paragraph bent to oblige.` : `You looked without choosing, and the page chose you back.`;
+  return [
+    `The library appears only when no one is looking. Its catalog updates with whatever you almost said.`,
+    `Today it files a volume under ${state.theme}, told ${tone}. The binding smells faintly of ${imgs[0]} and ${imgs[1]}.`,
+    `${fline}`,
+    `Chapters arrive as ${state.structure}; margin notes sketch ${mot}.`,
+    `Read long enough and the narrator confesses: it learned your pulse before it learned your name.`
+  ].join(" ");
+}
+
+function superpose(){
+  const seed = $("seed").value.trim();
+  const N = parseInt($("fieldSize").value,10);
+  const novelty = parseInt($("novelty").value,10)/100;
+
+  FIELD = buildField(seed, N, novelty);
+  // initialize posterior = base
+  const baseW = FIELD.map(s=>s.base);
+  const H = entropyOf(baseW);
+  $("bar_entropy").style.width = (H*100).toFixed(1)+"%";
+  $("bar_infl").style.width = "0%";
+  FIELD.forEach(s=> s.post = s.base);
+  renderFieldTable(FIELD);
+  $("story").textContent = "— field superposed; choose an observer to collapse —";
+  renderShadow(FIELD, -1);
+}
+
+function collapse(drawAgain=false){
+  if(FIELD.length===0){ superpose(); }
+  const gaze = parseFloat($("gaze").value||"1000");
+  const brpm = parseFloat($("brpm").value||"12");
+  const blink = parseFloat($("blink").value||"18");
+  const focus = $("focus").value.trim();
+
+  // posterior
+  const posts = FIELD.map(s=> s.base * observerInfluence(gaze, brpm, blink, focus, s));
+  const sum = posts.reduce((a,b)=>a+b,0);
+  FIELD.forEach((s,i)=> s.post = posts[i]/sum);
+
+  const infl = 1 - (FIELD.map(s=>s.base).reduce((a,b)=>a+b,0) / (sum+1e-9)); // crude
+  $("bar_infl").style.width = clamp(infl*100,0,100).toFixed(1)+"%";
+
+  // categorical draw
+  let r=Math.random(), acc=0, chosen=FIELD[0];
+  for(const s of FIELD){ acc += s.post; if(r <= acc){ chosen = s; break; } }
+  LAST_COLLAPSE = chosen;
+  
+  // Check if we should use AI or local
+  const provider = $('aiProvider').value;
+  const apiKey = $('apiKey').value.trim();
+  
+  if (provider !== 'local' && apiKey) {
+    // Use AI generation
+    const storyEl = $("story");
+    const collapseBtn = $("collapse");
+    const rerollBtn = $("reroll");
+    
+    storyEl.innerHTML = '<span class="spinner"></span>Collapsing probability field with AI...';
+    collapseBtn.classList.add('loading');
+    rerollBtn.classList.add('loading');
+    
+    const observerMetrics = { gaze, brpm, blink };
+    
+    generateWithAI(chosen, focus, $("seed").value, observerMetrics)
+      .then(text => {
+        storyEl.innerHTML = text + '<span class="gen-badge">AI Generated</span>';
+        collapseBtn.classList.remove('loading');
+        rerollBtn.classList.remove('loading');
+      })
+      .catch(err => {
+        storyEl.textContent = '⚠️ AI Error: ' + err.message + '\n\nFalling back to template:\n\n' + proseFromState($("seed").value, chosen, focus);
+        collapseBtn.classList.remove('loading');
+        rerollBtn.classList.remove('loading');
+      });
+  } else {
+    // Use local template generation
+    const text = proseFromState($("seed").value, chosen, focus);
+    $("story").textContent = text;
+  }
+  
+  renderFieldTable(FIELD);
+  renderShadow(FIELD, chosen.id);
+}
+
+function exportJSON(){
+  const data = {
+    seed: $("seed").value.trim(),
+    genre: CURRENT_GENRE,
+    fieldSize: parseInt($("fieldSize").value,10),
+    novelty: parseInt($("novelty").value,10)/100,
+    observer:{ gaze_ms: parseFloat($("gaze").value), brpm: parseFloat($("brpm").value), blink_per_min: parseFloat($("blink").value), focus: $("focus").value.trim() },
+    field: FIELD.map(s=>({id:s.id, theme:s.theme, tone:s.tone, structure:s.structure, motif:s.motif, posterior:s.post})),
+    story: $("story").textContent
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "quantum_anthology_snapshot.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LIBRARY SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+function getLibrary() {
+  try {
+    return JSON.parse(localStorage.getItem('qae_library') || '[]');
+  } catch { return []; }
+}
+
+function saveLibrary(library) {
+  localStorage.setItem('qae_library', JSON.stringify(library));
+  renderLibrary();
+}
+
+function saveToLibrary() {
+  const story = $('story').textContent || $('story').innerText;
+  if (!story || story.includes('field superposed') || story.includes('Collapsing probability')) {
+    alert('Generate a narrative first!');
+    return;
+  }
+  
+  const item = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    seed: $('seed').value.trim(),
+    genre: CURRENT_GENRE,
+    focus: $('focus').value.trim(),
+    story: story.replace(/AI Generated$/, '').trim(),
+    state: LAST_COLLAPSE
+  };
+  
+  const library = getLibrary();
+  library.unshift(item);
+  saveLibrary(library);
+  alert('Saved to library!');
+}
+
+function renderLibrary() {
+  const library = getLibrary();
+  const container = $('libraryList');
+  
+  if (library.length === 0) {
+    container.innerHTML = '<div class="mut" style="text-align:center; padding:20px">No saved narratives yet. Generate one and click "Save to Library".</div>';
+    return;
+  }
+  
+  container.innerHTML = library.map(item => `
+    <div class="saved-item" data-id="${item.id}">
+      <div class="saved-title" onclick="loadFromLibrary(${item.id})">
+        <div><strong>${item.genre}</strong>: ${item.seed.slice(0, 40)}${item.seed.length > 40 ? '...' : ''}</div>
+        <div class="saved-meta">${new Date(item.date).toLocaleDateString()} • ${item.focus || 'no focus'}</div>
+      </div>
+      <button class="delete-btn" onclick="deleteFromLibrary(${item.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+function loadFromLibrary(id) {
+  const library = getLibrary();
+  const item = library.find(i => i.id === id);
+  if (!item) return;
+  
+  $('seed').value = item.seed;
+  $('focus').value = item.focus || '';
+  CURRENT_GENRE = item.genre || 'literary';
+  updateGenreButtons();
+  $('story').textContent = item.story;
+  if (item.state) LAST_COLLAPSE = item.state;
+  superpose();
+}
+
+function deleteFromLibrary(id) {
+  if (!confirm('Delete this narrative?')) return;
+  const library = getLibrary().filter(i => i.id !== id);
+  saveLibrary(library);
+}
+
+function exportLibraryJSON() {
+  const library = getLibrary();
+  if (library.length === 0) {
+    alert('Library is empty!');
+    return;
+  }
+  const blob = new Blob([JSON.stringify(library, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'quantum_anthology_library.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importLibraryJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error('Invalid format');
+      const library = getLibrary();
+      const merged = [...imported, ...library];
+      saveLibrary(merged);
+      alert(`Imported ${imported.length} narratives!`);
+    } catch (err) {
+      alert('Error importing: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clearLibrary() {
+  if (!confirm('Delete ALL saved narratives? This cannot be undone.')) return;
+  saveLibrary([]);
+}
+
+function exportMarkdown() {
+  const story = $('story').textContent || $('story').innerText;
+  const state = LAST_COLLAPSE || {};
+  const md = `# Quantum Anthology Engine Output
+
+## Metadata
+- **Seed**: ${$('seed').value}
+- **Genre**: ${CURRENT_GENRE}
+- **Focus**: ${$('focus').value || 'none'}
+- **Theme**: ${state.theme || 'unknown'}
+- **Tone**: ${state.tone || 'unknown'}
+- **Structure**: ${state.structure || 'unknown'}
+- **Motif**: ${state.motif || 'unknown'}
+
+## Narrative
+
+${story.replace(/AI Generated$/, '').trim()}
+
+---
+*Generated by Quantum Anthology Engine*
+`;
+  const blob = new Blob([md], {type: 'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'quantum_narrative.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function copyStoryToClipboard() {
+  const story = $('story').textContent || $('story').innerText;
+  navigator.clipboard.writeText(story.replace(/AI Generated$/, '').trim())
+    .then(() => alert('Copied to clipboard!'))
+    .catch(() => alert('Copy failed'));
+}
+
+function updateGenreButtons() {
+  document.querySelectorAll('.genre-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.genre === CURRENT_GENRE);
+  });
+}
+
+// bindings
+$("novelty").addEventListener("input", ()=> $("noveltyVal").textContent = (parseInt($("novelty").value,10)/100).toFixed(2));
+$("temperature").addEventListener("input", ()=> $("tempVal").textContent = (parseInt($("temperature").value,10)/100).toFixed(2));
+$("aiProvider").addEventListener("change", ()=> { updateModelOptions(); $('statusDot').className = 'status-dot'; $('statusText').textContent = 'Not connected'; });
+$("testApi").addEventListener("click", testConnection);
+$("generate").addEventListener("click", superpose);
+$("collapse").addEventListener("click", ()=> collapse(false));
+$("reroll").addEventListener("click", ()=> collapse(true));
+$("export").addEventListener("click", exportJSON);
+$("exportMd").addEventListener("click", exportMarkdown);
+$("copyStory").addEventListener("click", copyStoryToClipboard);
+$("saveToLibrary").addEventListener("click", saveToLibrary);
+$("exportLibrary").addEventListener("click", exportLibraryJSON);
+$("importLibrary").addEventListener("click", ()=> $("importFile").click());
+$("importFile").addEventListener("change", importLibraryJSON);
+$("clearLibrary").addEventListener("click", clearLibrary);
+$("copyPrompt").addEventListener("click", ()=> navigator.clipboard.writeText($("prompt").innerText).then(()=>alert("Prompt copied.")));
+
+// Genre button handling
+document.querySelectorAll('.genre-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    CURRENT_GENRE = btn.dataset.genre;
+    updateGenreButtons();
+    superpose(); // regenerate field with new genre
+  });
+});
+
+// Biometrics
+$('startWebcam').addEventListener('click', startWebcam);
+$('startMic').addEventListener('click', startMicrophone);
+$('stopBiometrics').addEventListener('click', stopBiometrics);
+
+// Text-to-Speech
+$('speakStory').addEventListener('click', speakStory);
+$('stopSpeech').addEventListener('click', stopSpeech);
+$('speechRate').addEventListener('input', () => {
+  $('rateVal').textContent = (parseInt($('speechRate').value) / 100).toFixed(1) + 'x';
+});
+$('printStory').addEventListener('click', () => window.print());
+
+// Theme & Immersive
+$('toggleLight').addEventListener('click', toggleLightMode);
+$('toggleImmersive').addEventListener('click', toggleImmersiveMode);
+$('exitImmersive').addEventListener('click', exitImmersiveMode);
+$('toggleAmbient').addEventListener('click', startAmbient);
+
+// Exit immersive on fullscreen exit
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && document.body.classList.contains('immersive')) {
+    document.body.classList.remove('immersive');
+  }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd + Enter = Collapse
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    collapse(false);
+  }
+  // Ctrl/Cmd + Shift + Enter = Superpose
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
+    e.preventDefault();
+    superpose();
+  }
+  // Ctrl/Cmd + S = Save to library
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    saveToLibrary();
+  }
+  // Space = Read aloud (when not in input)
+  if (e.key === ' ' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+    e.preventDefault();
+    if (speechSynth.speaking) {
+      stopSpeech();
+    } else {
+      speakStory();
+    }
+  }
+  // Escape = Stop everything
+  if (e.key === 'Escape') {
+    stopSpeech();
+    stopBiometrics();
+  }
+});
+
+// init
+loadSavedSettings();
+renderLibrary();
+superpose();
+</script>
+</body>
+</html>
